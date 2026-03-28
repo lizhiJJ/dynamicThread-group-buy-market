@@ -1,0 +1,31 @@
+@startuml
+title NacosCloudRefresherHandlerV1 启动及配置监听流程
+
+!option handwritten true
+skinparam BackgroundColor #FFFFFF
+skinparam ArrowColor Black
+skinparam ParticipantBackgroundColor #F8FBFF
+skinparam ParticipantBorderColor #B0C4DE
+skinparam DefaultFontSize 14
+
+actor "SpringBoot 应用" as App
+participant "NacosCloudRefresherHandlerV1" as Handler
+participant "动态配置中心\nNacos" as Nacos
+participant "配置变更监听事件\nListener" as Listener
+
+== 应用启动 ==
+App -> Handler : run(args)
+
+Handler -> Handler : 获取 NacosConfig 配置
+
+Handler -> Nacos : 注册配置变更监听事件 addListener
+
+Nacos -> Listener : 配置有变更时回调 receiveConfigInfo
+
+Listener -> Handler : 检测并刷新线程池参数变更\ncheckAndRefreshThreadPoolProperties
+
+Handler -> Handler : 解析 Nacos 配置字符串为 Map\n并转换为 Java 配置对象
+
+Handler -> Handler : 对比线程池参数是否有变更\n- 无变更：跳过\n- 有变更：刷新线程池参数
+
+@enduml

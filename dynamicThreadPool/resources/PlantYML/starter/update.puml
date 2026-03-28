@@ -1,0 +1,49 @@
+@startuml
+title 动态线程池配置热更新流程图
+!option handwritten true
+
+' —— 全局布局 ——
+left to right direction
+skinparam horizontalSpacing 60
+skinparam verticalSpacing   40
+skinparam padding           16
+skinparam dpi               120
+
+' —— 样式定义 ——
+skinparam rectangle {
+  BackgroundColor #F0F8FF
+  BorderColor     #2E86C1
+  RoundCorner     6
+  Shadowing       false
+  FontColor       #1B4F72
+  FontSize        13
+}
+
+skinparam ArrowColor     #1B4F72
+skinparam ArrowThickness 1.5
+skinparam ArrowFontSize  11
+
+' —— 流程节点 ——
+rectangle "1. 拉取远程最新配置\n（Nacos/Apollo）" as Step1
+rectangle "2. 读取本地内存配置\n（Local Cache）" as Step2
+rectangle "3. 对比配置差异\n（Comparator）" as Step3
+rectangle "4. 有变更？" as Decision
+rectangle "5.1 执行线程池更新\n（Refresher）" as Step5a
+rectangle "5.2 跳过更新\n（保持原样）" as Step5b
+rectangle "6. 存储最新配置\n（Cache Persist）" as Step6
+rectangle "7. 打印变更日志\n（Logger）" as Step7
+rectangle "8. 通知各方\n（Notifier）" as Step8
+
+' —— 流程连线 ——
+Step1 --> Step3 : 提供远程配置
+Step2 --> Step3 : 提供本地配置
+Step3 --> Decision
+
+Decision --> Step5a : 检测到变更
+Decision --> Step5b : 无变更
+
+Step5a --> Step6
+Step5a --> Step7
+Step5a --> Step8
+
+@enduml

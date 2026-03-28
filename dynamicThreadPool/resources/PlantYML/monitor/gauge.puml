@@ -1,0 +1,16 @@
+@startuml
+participant "Prometheus" as Prom
+participant "Spring Actuator" as Actuator
+participant "MeterRegistry" as Registry
+participant "Gauge对象" as Gauge
+participant "绑定的RuntimeInfo" as RuntimeInfo
+
+Prom -> Actuator: GET /actuator/prometheus
+Actuator -> Registry: 获取所有指标数据
+Registry -> Gauge: 调用getValue()方法
+Gauge -> RuntimeInfo: 通过getter方法获取最新值
+RuntimeInfo -> Gauge: 返回当前值
+Gauge -> Registry: 返回指标值
+Registry -> Actuator: 返回所有指标数据
+Actuator -> Prom: 返回Prometheus格式数据
+@enduml

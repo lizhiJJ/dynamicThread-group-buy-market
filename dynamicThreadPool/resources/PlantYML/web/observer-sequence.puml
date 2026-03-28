@@ -1,0 +1,33 @@
+@startuml
+
+' ===== 主题配置：统一蓝灰风格 =====
+skinparam sequence {
+  ArrowColor #4A90E2
+  LifeLineBorderColor #CCCCCC
+  LifeLineBackgroundColor #F4F6FA
+  ParticipantBackgroundColor #EDF2F8
+  FontSize 14
+  ParticipantFontSize 14
+}
+
+' ===== 参与者定义 =====
+participant Client
+participant NewsPublisher
+participant EmailSubscriber
+participant SMSSubscriber
+
+' ===== 流程演示 =====
+Client -> NewsPublisher : addObserver(EmailSubscriber)
+Client -> NewsPublisher : addObserver(SMSSubscriber)
+Client -> NewsPublisher : publishNews("重要新闻")
+
+note right of NewsPublisher : 发布者调用\nnotifyObservers()
+NewsPublisher -> NewsPublisher : notifyObservers()
+
+NewsPublisher -> EmailSubscriber : update("重要新闻")
+EmailSubscriber -> EmailSubscriber : 发送邮件通知
+
+NewsPublisher -> SMSSubscriber : update("重要新闻")
+SMSSubscriber -> SMSSubscriber : 发送短信通知
+
+@enduml

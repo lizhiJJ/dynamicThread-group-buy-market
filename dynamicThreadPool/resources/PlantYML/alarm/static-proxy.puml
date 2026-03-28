@@ -1,0 +1,47 @@
+@startuml
+!option handwritten true
+skinparam style strictuml
+skinparam backgroundColor #F8FBFF
+skinparam defaultTextAlignment center
+
+' 通用样式
+skinparam rectangle {
+  FontColor #1A237E
+  FontSize 13
+  BorderColor #3949AB
+  RoundCorner 10
+  Shadowing true
+}
+
+skinparam rectangle<<entry>> {
+  BackgroundColor #BBDEFB
+}
+skinparam rectangle<<proxy>> {
+  BackgroundColor #64B5F6
+}
+skinparam rectangle<<impl>> {
+  BackgroundColor #90CAF9
+}
+
+skinparam ArrowColor #1E88E5
+skinparam ArrowFontSize 12
+skinparam ArrowThickness 1.4
+
+rectangle "线程池发起任务拒绝" <<entry>> as Entry
+
+rectangle "代理行为\n（统计次数 & 发送告警）" <<proxy>> as Proxy
+
+package "RejectedExecutionHandler" {
+  rectangle "实际的拒绝策略执行\n(AbortPolicy)" <<impl>> as A
+  rectangle "实际的拒绝策略执行\n(DiscardPolicy)" <<impl>> as B
+  rectangle "实际的拒绝策略执行\n(DiscardOldestPolicy)" <<impl>> as C
+  rectangle "实际的拒绝策略执行\n(……)" <<impl>> as D
+}
+
+Entry --> Proxy : 拦截 rejectedExecution()
+Proxy --> A : 增强后执行
+Proxy --> B : 增强后执行
+Proxy --> C : 增强后执行
+Proxy --> D : 增强后执行
+
+@enduml

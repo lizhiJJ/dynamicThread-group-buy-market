@@ -1,0 +1,33 @@
+@startuml
+
+!option handwritten true
+skinparam backgroundColor #FEFEFE
+
+interface NotifierService {
+  + sendChangeMessage(ThreadPoolConfigChangeDTO)
+  + sendWebChangeMessage(WebThreadPoolConfigChangeDTO)
+  + sendAlarmMessage(ThreadPoolAlarmNotifyDTO)
+}
+
+class NotifierDispatcher {
+  -Map<String, NotifierService> NOTIFIER_SERVICE_MAP
+  + sendChangeMessage(ThreadPoolConfigChangeDTO)
+  + sendWebChangeMessage(WebThreadPoolConfigChangeDTO)
+  + sendAlarmMessage(ThreadPoolAlarmNotifyDTO)
+  - Optional<NotifierService> getNotifierService()
+}
+
+class DingTalkMessageService {
+  + sendChangeMessage(ThreadPoolConfigChangeDTO)
+  + sendWebChangeMessage(WebThreadPoolConfigChangeDTO)
+  + sendAlarmMessage(ThreadPoolAlarmNotifyDTO)
+  - sendDingTalkMarkdownMessage(String, String, List)
+}
+
+NotifierService <|.. NotifierDispatcher
+
+NotifierService <|.. DingTalkMessageService
+
+NotifierDispatcher --> DingTalkMessageService : 创建 >
+
+@enduml

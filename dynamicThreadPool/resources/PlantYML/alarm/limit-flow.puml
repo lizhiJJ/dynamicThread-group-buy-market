@@ -1,0 +1,26 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+!option handwritten true
+skinparam activityBorderColor #2C3E50
+skinparam activityBackgroundColor #ECF0F1
+skinparam activityDiamondBorderColor #2C3E50
+skinparam activityDiamondBackgroundColor #ECF0F1
+skinparam arrowColor #2C3E50
+skinparam shadowing false
+
+start
+:新告警到达;
+if (检查缓存中是否有记录?) then (没有记录)
+  :允许发送;
+else (有记录)
+  if (检查是否超过时间间隔?) then (是)
+    :允许发送;
+  else (否)
+    :拒绝发送;
+    stop
+  endif
+endif
+:更新时间戳;
+:发送告警;
+stop
+@enduml

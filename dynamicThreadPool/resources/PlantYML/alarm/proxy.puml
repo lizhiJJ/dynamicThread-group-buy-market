@@ -1,0 +1,46 @@
+@startuml
+
+!option handwritten true
+
+skinparam style strictuml
+skinparam backgroundColor #FFFFFF
+skinparam defaultTextAlignment center
+
+skinparam dpi 100
+skinparam padding 10
+skinparam horizontalSpacing 60
+skinparam verticalSpacing 50
+
+skinparam rectangle {
+  FontSize 15
+  FontColor #0D47A1
+  RoundCorner 12
+  BorderColor #1565C0
+  Shadowing true
+}
+
+skinparam rectangle<<caller>> {
+  BackgroundColor #0288D1  ' 调用方 - 深亮蓝
+}
+skinparam rectangle<<interface>> {
+  BackgroundColor #4FC3F7  ' 接口 - 中亮蓝
+}
+skinparam rectangle<<proxy>> {
+  BackgroundColor #81D4FA  ' 代理类 - 浅蓝
+}
+skinparam rectangle<<real>> {
+  BackgroundColor #1976D2  ' 实现类 - 深蓝
+}
+
+left to right direction
+
+rectangle "调用方" <<caller>> as Caller
+rectangle "能够被代理的接口" <<interface>> as Subject
+rectangle "代理对象（Proxy）" <<proxy>> as Proxy
+rectangle "真实业务对象" <<real>> as RealObject
+
+Caller --> Subject : 调用接口
+Proxy --> RealObject : 委托执行
+Proxy ..|> Subject : 实现接口
+RealObject ..|> Subject : 实现接口
+@enduml

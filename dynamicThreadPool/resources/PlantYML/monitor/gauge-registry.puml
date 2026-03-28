@@ -1,0 +1,19 @@
+@startuml
+participant "应用代码" as App
+participant "Micrometer" as Meter
+participant "MeterRegistry" as Registry
+participant "Gauge对象" as Gauge
+
+App -> Meter: Metrics.gauge(name, tags, obj, getter)
+Meter -> Registry: 检查是否已存在相同name+tags的Gauge
+alt 第一次注册
+    Registry -> Gauge: 创建新的Gauge对象
+    Gauge -> Gauge: 绑定obj对象引用
+    Registry -> Registry: 缓存Gauge对象
+    Registry -> Meter: 返回新创建的Gauge
+else 已存在相同指标
+    Registry -> Meter: 直接返回已存在的Gauge
+    note right: 忽略新传入的obj参数
+end
+Meter -> App: 返回Gauge对象
+@enduml

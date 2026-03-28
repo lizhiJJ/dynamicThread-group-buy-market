@@ -1,0 +1,51 @@
+@startuml
+' === 样式配置 ===
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam rectangle {
+  BackgroundColor #FAFAFA
+  BorderColor #CCCCCC
+  FontColor #333333
+  FontSize 13
+  RoundCorner 8
+}
+skinparam note {
+  BackgroundColor #F5FAF7
+  BorderColor #B0BEC5
+  FontColor #333333
+  FontSize 12
+}
+
+' === 模块定义 ===
+rectangle "Spring Boot Test" {
+    [测试主线程] as main
+
+    rectangle "线程池组" as poolGroup {
+        [普通线程池\n(NormalThreadPool)] as normal
+        [动态线程池\n(DynamicThreadPool)] as dynamic
+    }
+
+    rectangle "后台任务" as background {
+        [监控采集\n(ThreadPoolMonitor)] as monitor
+        [告警检测\n(ThreadPoolAlarmChecker)] as alarm
+    }
+}
+
+' === 交互关系 ===
+main --> normal : 提交 N 个任务
+main --> dynamic : 提交 N 个任务
+monitor --> dynamic : 定时采集 (5s)
+alarm --> dynamic : 定时检查 (5s)
+
+' === 注释说明 ===
+note right of monitor
+真实运行采集线程状态
+包含锁竞争，影响采样周期
+end note
+
+note bottom of alarm
+真实运行检查告警条件
+可能产生轻微锁竞争
+end note
+
+@enduml

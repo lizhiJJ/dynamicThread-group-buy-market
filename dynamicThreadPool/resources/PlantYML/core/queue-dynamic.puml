@@ -1,0 +1,29 @@
+@startuml
+!option handwritten true
+actor "管理员" as Admin
+participant "管理平台" as Platform
+participant "线程池" as ThreadPool
+participant "阻塞队列" as Queue
+actor "客户端" as Client
+
+== 固定容量场景（容量=1000） ==
+Client -> ThreadPool: 提交任务 (流量激增)
+ThreadPool -> Queue: 放入任务
+Queue -> ThreadPool: 队列已满 (容量=1000)
+ThreadPool -> Client: 拒绝任务
+note right: 固定容量可能引发系统雪崩
+
+== 动态扩容场景 ==
+Admin -> Platform: 请求调整队列容量
+Platform -> Queue: setCapacity(10000)
+Queue -> Queue: 更新容量为 10000
+Queue -> Platform: 容量调整成功
+Platform -> Admin: 确认容量变更
+note right: 管理平台触发动态扩容
+
+Client -> ThreadPool: 提交任务 (流量激增)
+ThreadPool -> Queue: 放入任务
+Queue -> ThreadPool: 任务成功排队
+note right: 扩容后缓冲流量高峰，避免任务拒绝
+
+@enduml

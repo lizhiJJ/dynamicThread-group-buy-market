@@ -1,0 +1,46 @@
+@startuml
+skinparam backgroundColor #FFFFFF
+skinparam activity {
+  BackgroundColor #FDFDFD
+  BorderColor Black
+  FontName "Microsoft YaHei"
+  FontSize 14
+  StartColor #AED6F1
+  EndColor #F5B7B1
+  DiamondBackgroundColor #FCF3CF
+  DiamondBorderColor Black
+}
+
+start
+:新任务到达;
+
+' 1) 先尝试用空闲线程
+if (存在空闲线程?) then (是)
+  :分配空闲线程执行;
+else (否)
+  ' 2) 无空闲线程，若尚未达到 maxThreads，拉起新线程
+  if (当前线程数 < maxThreads?) then (是)
+    :创建新工作线程;\n(同时任务入队/被新线程立即消费);
+  else (否)
+    ' 3) 已达 maxThreads，才考虑排队
+    if (队列可入队?) then (是)
+      :任务入队等待;
+    else (否)
+      :拒绝任务(RejectedExecution);
+      stop
+    endif
+  endif
+endif
+
+:线程执行任务;
+:任务完成;
+
+' 4) 回收：仅当空闲超时且线程数高于 minThreads 才能回收
+if (线程空闲时间 > idleTimeout?) then (是)
+  if (当前线程数 > minThreads?) then (是)
+    :回收空闲线程;
+  endif
+endif
+
+stop
+@enduml

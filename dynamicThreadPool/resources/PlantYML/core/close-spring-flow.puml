@@ -1,0 +1,26 @@
+@startuml
+!theme plain
+
+start
+:Spring 容器开始关闭;
+:遍历所有单例 Bean;
+:检查 Bean 是否有销毁方法;
+if (有 @PreDestroy 方法?) then (是)
+  :执行 @PreDestroy 方法;
+endif
+if (实现了 DisposableBean?) then (是)
+  :调用 destroy() 方法;
+endif
+if (有约定的销毁方法?) then (是)
+  :查找 close/shutdown/stop/destroy 方法;
+  :通过反射调用方法;
+  note right: OneThreadExecutor.shutdown() 在这里被调用
+endif
+:继续处理下一个 Bean;
+if (还有 Bean 需要处理?) then (是)
+  :遍历所有单例 Bean;
+else (否)
+  stop
+endif
+
+@enduml

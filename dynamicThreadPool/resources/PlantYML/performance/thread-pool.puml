@@ -1,0 +1,56 @@
+@startuml
+!define RECTANGLE class
+
+' ===== 全局样式 =====
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+skinparam defaultFontColor #333333
+skinparam rectangle {
+  BackgroundColor #FAFAFA
+  BorderColor #CCCCCC
+  FontSize 15
+  FontColor #333333
+  RoundCorner 10
+}
+skinparam note {
+  BackgroundColor #F5FAF7
+  BorderColor #B0BEC5
+  FontColor #333333
+}
+
+
+' ===== 模块定义 =====
+rectangle "业务线程" as business
+
+rectangle "OneThreadExecutor\n(任务执行器)" as executor
+rectangle "OneThreadRegistry\n(线程池注册中心)" as registry
+
+rectangle "ThreadPoolMonitor\n(监控采集)" as monitor
+rectangle "Micrometer\n(指标上报)" as micrometer
+
+rectangle "ThreadPoolAlarmChecker\n(告警检测)" as alarm
+rectangle "NotifierDispatcher\n(告警通知)" as notifier
+
+' ===== 布局关系 =====
+business -down-> executor : 提交任务
+executor -down-> registry : 注册线程池
+
+monitor -right-> registry : 定时采集指标
+alarm -left-> registry : 定时检查状态
+monitor -down-> micrometer : 上报监控指标
+alarm -down-> notifier : 发送告警通知
+
+' ===== 说明 note（优化对齐） =====
+note right of monitor
+每 5~10 秒采集一次指标
+调用带锁的采集 API
+获取线程数、队列使用率等信息
+end note
+
+note right of alarm
+每 5 秒执行检查任务
+计算活跃度与队列饱和度等
+超过阈值触发告警
+end note
+
+@enduml

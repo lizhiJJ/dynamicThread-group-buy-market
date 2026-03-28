@@ -1,0 +1,44 @@
+@startuml
+
+!option handwritten true
+actor "ThreadPoolAlarmChecker" as Checker
+participant "NotifierDispatcher" as Dispatcher
+participant "ThreadPoolAlarmNotifyDTO" as DTO
+participant "AlarmRateLimiter" as Limiter
+
+== 告警触发 ==
+
+Checker -> Checker : 构建基础 alarm DTO
+note right
+仅包含 threadPoolId、alarmType、interval 等基础字段
+不含 queueSize、activeThread 等敏感指标
+end note
+
+Checker -> DTO : alarm.setSupplier(() -> {...})
+note right
+注册延迟构建逻辑
+end note
+
+Checker -> Dispatcher : sendAlarmMessage(alarm)
+
+== Dispatcher 内部频率控制 ==
+
+Dispatcher -> Limiter : allowAlarm(threadPoolId, alarmType, interval)
+Limiter --> Dispatcher : true / false
+
+alt allow = true
+
+    Dispatcher -> DTO : alarm.resolve()
+    DTO -> DTO : supplier.get() 填充核心指标
+    DTO --> Dispatcher : 完整 DTO
+
+    Dispatcher -> NotifierService : sendAlarmMessage(alarm)
+
+else allow = false
+
+    note over Dispatcher
+    忽略此次告警，未触发 Supplier
+    end note
+
+end
+@enduml

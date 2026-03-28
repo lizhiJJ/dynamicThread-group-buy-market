@@ -1,0 +1,23 @@
+@startuml
+!define RECTANGLE class
+
+RECTANGLE OneThreadBannerHandler {
+  - version: String
+  - DYNAMIC_THREAD_POOL: String
+  - ONE_THREAD_DASHBOARD: String
+  - ONE_THREAD_SITE: String
+  + afterPropertiesSet(): void
+}
+
+RECTANGLE CommonAutoConfiguration {
+  + oneThreadBannerHandler(): OneThreadBannerHandler
+}
+
+RECTANGLE BuildProperties {
+  + getVersion(): String
+}
+
+OneThreadBannerHandler ..|> InitializingBean
+CommonAutoConfiguration --> OneThreadBannerHandler : creates
+OneThreadBannerHandler --> BuildProperties : uses
+@enduml3

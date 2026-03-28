@@ -1,0 +1,57 @@
+@startuml
+title OneThread 动态线程池 Bean 初始化流程
+!option handwritten true
+
+' 清爽蓝灰配色
+skinparam BackgroundColor #F9FAFC
+skinparam ParticipantBackgroundColor #E3ECF3
+skinparam ParticipantBorderColor #AAB8C2
+skinparam ActorBackgroundColor #DDEAF6
+skinparam ActorBorderColor #AAB8C2
+skinparam ArrowColor #4A90E2
+skinparam NoteBackgroundColor #FFFFFF
+skinparam NoteBorderColor #B0BEC5
+skinparam SequenceBoxBackgroundColor #EDF3F9
+skinparam SequenceBoxBorderColor #AAB8C2
+
+actor "Spring\n容器" as SpringContext
+participant "Bean 实例\nOneThreadExecutor" as Bean
+participant "注解扫描器\nApplicationContextHolder" as Scanner
+participant "配置读取器\nBootstrapConfigProperties" as ConfigReader
+participant "注册器\nOneThreadRegistry" as Registry
+participant "反射工具\nReflectUtil" as ReflectUtil
+
+== Bean 初始化后处理 ==
+
+SpringContext -> Bean : 初始化完成
+SpringContext -> SpringContext : postProcessAfterInitialization()
+
+alt Bean 是 OneThreadExecutor
+
+    SpringContext -> Scanner : 查找是否有\n@DynamicThreadPool 注解
+    Scanner --> SpringContext : 返回注解或 null
+
+    alt 找到注解
+        SpringContext -> ConfigReader : 根据线程池 ID 获取配置
+        ConfigReader --> SpringContext : 返回配置项
+
+        note right of ConfigReader
+          如果没有匹配 ID 将抛出异常
+        end note
+
+        SpringContext -> Bean : 设置 corePoolSize 和 maxPoolSize
+        SpringContext -> ReflectUtil : 使用反射设置 workQueue
+        SpringContext -> Bean : 设置 keepAliveTime 和拒绝策略
+        SpringContext -> Registry : 注册线程池到 OneThreadRegistry
+
+    else 未找到注解
+        SpringContext -> SpringContext : 跳过处理，直接返回 Bean
+    end
+
+else Bean 不是 OneThreadExecutor
+    SpringContext -> SpringContext : 不处理，返回原始 Bean
+end
+
+SpringContext -> SpringContext : 返回初始化后的 Bean
+
+@enduml

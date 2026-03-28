@@ -1,0 +1,58 @@
+@startuml
+!theme plain
+
+skinparam defaultTextAlignment left
+skinparam ParticipantBackgroundColor #F9F9F9
+skinparam ParticipantBorderColor Black
+skinparam ParticipantFontColor Black
+skinparam ArrowColor Black
+skinparam NoteBackgroundColor #F4F6F7
+skinparam NoteBorderColor #B0BEC5
+skinparam NoteFontColor Black
+skinparam SequenceLifeLineBorderColor #B0BEC5
+skinparam SequenceLifeLineBackgroundColor White
+skinparam BackgroundColor White
+
+participant "应用" as app
+participant "SpringApplication" as spring
+participant "ApplicationContext" as context
+participant "BeanFactory" as factory
+participant "OneThreadExecutor" as executor
+
+' 步骤 0：关闭信号发出
+app -[#gray,dashed]> spring : 关闭信号 (SIGTERM/SIGINT)
+
+' 步骤 1：启动关闭流程
+spring -> context : exit()
+context -> context : close()
+context -> context : doClose()
+
+' 步骤 2：发布关闭事件
+note right of context
+步骤 1：发布 ContextClosedEvent
+end note
+context -> context : publishEvent(ContextClosedEvent)
+
+' 步骤 3：停止生命周期组件
+note right of context
+步骤 2：停止所有 Lifecycle Bean
+end note
+context -> context : stopLifecycleBeans()
+
+' 步骤 4：销毁单例 Bean，触发线程池关闭
+note right of context
+步骤 3：销毁所有单例 Bean
+end note
+context -> factory : destroySingletons()
+factory -> executor : shutdown()
+note right of executor
+oneThread 在线程池此处被销毁
+end note
+
+' 步骤 5：关闭 BeanFactory
+note right of context
+步骤 4：关闭 BeanFactory
+end note
+context -> factory : close()
+
+@enduml

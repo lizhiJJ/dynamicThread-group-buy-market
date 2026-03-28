@@ -1,0 +1,42 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+
+participant "开发者" as Dev
+participant "管理界面" as Dashboard
+participant "线程池中间件" as Middleware
+participant "业务应用A" as AppA
+participant "业务应用B" as AppB
+
+Dev -> Dashboard: 可视化操作
+Dashboard -> Middleware: 发送管理指令
+activate Middleware
+Middleware -> AppA: 推送配置变更
+activate AppA
+AppA -> AppA: 动态更新线程池参数
+AppA -> Middleware: 上报运行状态
+deactivate AppA
+
+Middleware -> AppB: 推送配置变更
+activate AppB
+AppB -> AppB: 动态更新线程池参数
+AppB -> Middleware: 上报运行状态
+deactivate AppB
+
+Middleware -> Dashboard: 展示监控数据
+deactivate Middleware
+Dashboard -> Dev: 可视化展示
+
+note right of Middleware
+  **优点：**
+  • 功能丰富完善
+  • 可视化体验好
+  • 扩展性强
+
+  **缺点：**
+  • 架构复杂度高
+  • 运维成本增加
+  • 稳定性依赖增多
+end note
+
+@enduml

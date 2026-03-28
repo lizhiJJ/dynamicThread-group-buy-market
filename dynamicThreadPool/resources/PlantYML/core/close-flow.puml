@@ -1,0 +1,25 @@
+@startuml
+!theme plain
+
+start
+:调用 shutdown();
+if (已经关闭?) then (是)
+  stop
+else (否)
+  :调用 super.shutdown();
+  note right: 停止接收新任务
+  if (配置了等待时间?) then (否)
+    stop
+  else (是)
+    :记录开始关闭日志;
+    :调用 awaitTermination();
+    if (在超时时间内完成?) then (是)
+      :记录成功关闭日志;
+    else (否)
+      :记录超时警告日志;
+    endif
+  endif
+endif
+stop
+
+@enduml

@@ -1,0 +1,34 @@
+@startuml
+!theme plain
+
+package "传统方式" {
+  [开发者] as dev1
+  [ThreadPoolExecutor] as tpe
+  [手动管理] as manual
+
+  dev1 --> manual : 必须记住
+  manual --> tpe : @PreDestroy\n手动调用 shutdown()
+
+  note bottom of manual
+    - 容易遗忘
+    - 样板代码多
+    - 错误处理复杂
+  end note
+}
+
+package "oneThread 方式" {
+  [开发者] as dev2
+  [OneThreadExecutor] as ote
+  [Spring 容器] as spring
+
+  dev2 --> ote : 直接使用
+  spring --> ote : 自动调用 shutdown()
+
+  note bottom of spring
+    - 自动管理
+    - 零配置
+    - 可靠性高
+  end note
+}
+
+@enduml

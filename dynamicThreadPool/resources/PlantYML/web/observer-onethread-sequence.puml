@@ -1,0 +1,22 @@
+@startuml
+participant "配置中心" as Config
+participant "AbstractRefresher" as Refresher
+participant "ApplicationContextHolder" as Holder
+participant "Spring容器" as Spring
+participant "WebListener" as WebListener
+participant "CommonListener" as CommonListener
+
+Config -> Refresher: 配置变更回调
+Refresher -> Refresher: refreshThreadPoolProperties()
+Refresher -> Refresher: 解析配置信息
+Refresher -> Holder: publishEvent(event)
+Holder -> Spring: publishEvent(event)
+
+Spring -> WebListener: onApplicationEvent(event)
+WebListener -> WebListener: 处理Web线程池更新
+
+Spring -> CommonListener: onApplicationEvent(event)
+CommonListener -> CommonListener: 处理通用线程池更新
+
+note right of Spring: Spring容器自动路由事件\n到所有相关监听器
+@enduml

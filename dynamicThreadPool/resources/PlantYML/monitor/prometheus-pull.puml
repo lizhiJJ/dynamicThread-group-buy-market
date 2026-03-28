@@ -1,0 +1,57 @@
+@startuml
+skinparam style strictuml
+skinparam defaultTextAlignment center
+skinparam packageStyle rectangle
+skinparam backgroundColor #F8FAFC
+skinparam classFontColor Black
+skinparam component {
+  BackgroundColor #E8F1FA
+  BorderColor #3B82F6
+}
+skinparam database {
+  BackgroundColor #F0F0F0
+  BorderColor Black
+}
+skinparam actor {
+  BackgroundColor #FFFFFF
+  BorderColor Black
+}
+
+title Prometheus 默认拉模型架构图
+
+actor User as U #white
+
+package "Prometheus Server" {
+    component "Scrape Manager\n采集管理器" as Scraper
+    component "Alerting Rules Engine\n告警规则引擎" as RuleEngine
+    component "PromQL 查询引擎" as Query
+    database "TSDB\n时序数据库" as Storage
+}
+
+package "Targets\n被监控端" {
+    [App A\n应用A] as A
+    [App B\n应用B] as B
+    [Node Exporter\n主机指标] as N
+}
+
+component "Alertmanager\n告警管理器" as AM #LightYellow
+
+' Scrape 流程
+Scraper --> A : Pull /metrics
+Scraper --> B : Pull /metrics
+Scraper --> N : Pull /metrics
+
+' 写入 TSDB
+Scraper --> Storage : 写入指标数据
+
+' 告警流程
+Scraper --> RuleEngine : 触发告警评估
+RuleEngine --> Storage : 查询时间序列
+RuleEngine --> AM : 发送告警（可选）
+
+' 查询流程
+U --> Query : 执行 PromQL 查询
+Query --> Storage : 查询数据
+Query --> U : 返回结果
+
+@enduml

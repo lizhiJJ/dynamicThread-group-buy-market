@@ -1,0 +1,30 @@
+@startuml
+title intern() 原理：确保相同内容字符串返回同一引用
+!option handwritten true
+
+actor Thread1
+actor Thread2
+
+
+participant "ObjA.getThreadPoolId()" as A
+participant "ObjB.getThreadPoolId()" as B
+participant "String.intern()" as Intern
+participant "String Pool" as Pool
+participant "同步锁对象" as Lock
+
+Thread1 -> A : new String("core-biz-pool")
+A -> Intern : 调用 intern()
+Intern -> Pool : 检查常量池中是否已存在
+Pool --> Intern : 返回统一引用
+Intern --> Thread1 : 返回 Lock
+
+Thread2 -> B : new String("core-biz-pool")
+B -> Intern : 调用 intern()
+Intern -> Pool : 已存在相同内容
+Pool --> Intern : 返回统一引用
+Intern --> Thread2 : 返回 Lock
+
+Thread1 -> Lock : synchronized(lock)
+Thread2 -> Lock : synchronized(lock)
+
+@enduml

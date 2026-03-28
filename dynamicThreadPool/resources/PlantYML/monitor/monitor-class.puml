@@ -1,0 +1,57 @@
+@startuml
+skinparam style strictuml
+!option handwritten true
+
+skinparam class {
+  FontName "微软雅黑"
+  ArrowColor Black
+  BorderColor Black
+  BackgroundColor White
+}
+
+package "监控配置层" #EAF6FF {
+    class MonitorConfig {
+        +是否启用监控
+        +采集频率
+    }
+}
+
+package "监控调度层" #E8F8F5 {
+    class ThreadPoolMonitor {
+        +启动定时任务()
+        +配置采集源()
+    }
+
+    class "ScheduledTask\n(定时任务)" as ScheduledTask #F9F9F9 {
+        +周期执行()
+        +执行采集逻辑()
+    }
+
+    class LogMonitor #FFFDE7 {
+        +记录线程池指标日志()
+    }
+
+    class Micrometer #FFFDE7 {
+        +注册指标()
+    }
+
+    class RuntimeInfo #FFFDE7 {
+        +采集运行时数据()
+    }
+
+    ThreadPoolMonitor --> ScheduledTask : 启动并调度
+    ScheduledTask --> LogMonitor : 日志采集
+    ScheduledTask --> Micrometer : 指标采集
+    ScheduledTask --> RuntimeInfo : 状态采集
+}
+
+package "线程池注册中心" #F5F0FF {
+    class OneThreadRegistry {
+        +注册线程池()
+        +获取线程池信息()
+    }
+}
+
+MonitorConfig --> ThreadPoolMonitor : 控制监控策略
+ThreadPoolMonitor --> OneThreadRegistry : 获取线程池信息
+@enduml

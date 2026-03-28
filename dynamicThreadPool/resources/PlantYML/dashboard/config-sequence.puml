@@ -1,0 +1,38 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam componentStyle rectangle
+
+participant "开发者" as Dev
+participant "配置中心\n(Nacos/Apollo)" as Config
+participant "业务应用A" as AppA
+participant "业务应用B" as AppB
+
+Dev -> Config: 修改线程池配置
+activate Config
+Config -> AppA: 推送配置变更
+activate AppA
+AppA -> AppA: 动态更新线程池参数
+AppA -> Config: 上报运行状态
+deactivate AppA
+
+Config -> AppB: 推送配置变更
+activate AppB
+AppB -> AppB: 动态更新线程池参数
+AppB -> Config: 上报运行状态
+deactivate AppB
+deactivate Config
+
+note right of Config
+  **优点：**
+  • 架构轻量，部署简单
+  • 无额外中间件依赖
+  • 运维成本低
+
+  **缺点：**
+  • 扩展性有限
+  • 可视化能力弱
+  • 功能相对单一
+end note
+
+@enduml

@@ -1,0 +1,33 @@
+@startuml
+!theme plain
+
+package "Spring 容器层" {
+  [Bean 生命周期管理] as lifecycle
+  note right of lifecycle
+    - @PreDestroy 自动触发
+    - DisposableBean 接口支持
+  end note
+}
+
+package "oneThread 框架层" {
+  [OneThreadExecutor] as executor
+  note right of executor
+    - 重写 shutdown() 方法
+    - 可配置等待时间
+    - 完整的日志记录
+  end note
+}
+
+package "JDK 线程池层" {
+  [ThreadPoolExecutor] as jdk
+  note right of jdk
+    - awaitTermination() 等待机制
+    - 任务队列管理
+    - 线程生命周期控制
+  end note
+}
+
+lifecycle --> executor : 触发关闭
+executor --> jdk : 调用底层方法
+
+@enduml

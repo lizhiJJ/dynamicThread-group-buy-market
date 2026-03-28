@@ -1,0 +1,48 @@
+@startuml
+title 动态代理增强线程池拒绝策略结构图
+!option handwritten true
+
+skinparam style strictuml
+skinparam class {
+  BackgroundColor #F0F8FF
+  BorderColor #2E86C1
+  FontSize 13
+}
+skinparam ArrowColor #1B4F72
+skinparam ArrowFontSize 12
+skinparam ArrowThickness 1.2
+skinparam defaultTextAlignment center
+
+interface RejectedExecutionHandler {
+    + rejectedExecution(r: Runnable, executor: ThreadPoolExecutor)
+}
+
+class AbortPolicy {
+    + rejectedExecution(r, executor)
+}
+
+class RejectedProxyInvocationHandler {
+    - target: Object
+    - rejectCount: AtomicLong
+    + invoke(proxy, method, args)
+}
+
+class OneThreadExecutor {
+    - rejectCount: AtomicLong
+    + setRejectedExecutionHandler(handler)
+}
+
+class Proxy.newProxyInstance <<static>>
+
+note top of RejectedProxyInvocationHandler
+实现 InvocationHandler 接口，
+通过代理增强拒绝策略逻辑。
+end note
+
+RejectedExecutionHandler <|.. AbortPolicy
+RejectedExecutionHandler <.. Proxy.newProxyInstance
+Proxy.newProxyInstance --> RejectedProxyInvocationHandler : 委托执行 invoke()
+OneThreadExecutor --> Proxy.newProxyInstance : 包装 handler
+OneThreadExecutor --> RejectedExecutionHandler : 设置代理 handler
+
+@enduml

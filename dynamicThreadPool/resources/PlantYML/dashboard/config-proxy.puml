@@ -1,0 +1,34 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+
+package "DashBoard-Dev 服务" {
+  [Controller 层] as Controller
+  [Service 层] as Service
+  [Nacos代理客户端] as Proxy
+}
+
+package "外部依赖" {
+  [Nacos 配置中心] as Nacos
+  [业务应用集群] as Apps
+}
+
+package "前端界面" {
+  [管理界面] as UI
+}
+
+UI --> Controller : HTTP 请求
+Controller --> Service : 业务调用
+Service --> Proxy : 代理调用
+Proxy --> Nacos : HTTP API
+Service --> Apps : 直接 HTTP 调用
+
+note right of Proxy
+  **核心职责：**
+  • 封装 Nacos HTTP API
+  • 处理命名空间转换
+  • 统一异常处理
+  • 提供配置 CRUD 操作
+end note
+
+@enduml

@@ -1,0 +1,36 @@
+@startuml
+title SpringBoot Starter 启动原理流程图
+
+!option handwritten true
+skinparam BackgroundColor #FFFFFF
+skinparam ArrowColor Black
+skinparam ActorBorderColor black
+skinparam ParticipantBorderColor black
+skinparam ParticipantBackgroundColor #FDF6E3
+skinparam SequenceBoxBorderColor black
+skinparam SequenceBoxBackgroundColor #EEE8D5
+
+actor "开发者\n引入 Starter" as Developer
+
+participant "SpringBoot 应用启动\n(SpringApplication.run)" as SpringBoot
+participant "Starter 模块\n(META-INF/spring.factories)" as Starter
+participant "自动配置类\n(@Configuration + @Conditional)" as AutoConfig
+participant "Spring 容器\n(ApplicationContext)" as Context
+
+== 启动流程 ==
+
+Developer -> SpringBoot : 启动应用
+SpringBoot -> Starter : 加载 spring.factories
+Starter -> AutoConfig : 加载配置类名称
+AutoConfig -> Context : 条件匹配 & 注册 Bean
+Context -> SpringBoot : 容器初始化完成
+
+note right of AutoConfig
+  每个配置类使用
+  @ConditionalOnXXX 判断
+  当前环境是否适配
+end note
+
+SpringBoot -> Developer : 应用启动成功，自动配置生效
+
+@enduml

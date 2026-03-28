@@ -1,0 +1,46 @@
+@startuml
+skinparam backgroundColor #FFFFFF
+skinparam activity {
+  BackgroundColor #FDFDFD
+  BorderColor Black
+  FontName "Microsoft YaHei"
+  FontSize 14
+  StartColor #A2D9CE
+  EndColor #E6B0AA
+  DiamondBackgroundColor #FCF3CF
+}
+
+start
+:新请求到达;
+
+' 1) 先保证达到 minSpareThreads（Tomcat中的“核心”概念）
+if (当前线程数 < minSpareThreads?) then (是)
+  :创建工作线程处理请求;
+else (否)
+  ' 2) Tomcat 策略：若未到 maxThreads，优先扩容而非排队
+  if (当前线程数 < maxThreads?) then (是)
+    :优先创建工作线程处理请求;
+  else (否)
+    ' 3) 已到 maxThreads，才考虑入队等待
+    if (队列未满?) then (是)
+      :请求进入队列等待;
+    else (否)
+      ' 4) 队列也满了，无法受理
+      :触发拒绝策略(RejectedExecution);
+      stop
+    endif
+  endif
+endif
+
+:工作线程执行请求;
+:处理完成;
+
+' 5) 线程回收：空闲超时且高于 minSpareThreads 才可回收
+if (线程空闲时间 > keepAliveTime?) then (是)
+  if (当前线程数 > minSpareThreads?) then (是)
+    :回收空闲线程;
+  endif
+endif
+
+stop
+@enduml

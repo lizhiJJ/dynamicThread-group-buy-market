@@ -1,0 +1,47 @@
+@startuml
+' 清新简洁风格
+!theme plain
+
+skinparam backgroundColor #F9FBFD
+skinparam defaultFontName "Microsoft YaHei"
+skinparam shadowing true
+
+skinparam sequence {
+    ArrowColor Black
+    LifeLineBorderColor #90A4AE
+    LifeLineBackgroundColor #FFFFFF
+    ParticipantBorderColor #90A4AE
+    ParticipantBackgroundColor #E1F5FE
+    FontSize 14
+    BoxBackgroundColor #E6F7E6
+}
+
+participant "定时任务线程\n(scheduler)" as Timer
+participant "micrometerMonitor(runtimeInfo)" as Monitor
+participant "新传入对象\nruntimeInfoX" as RuntimeInfoX
+participant "缓存 Map\nmicrometerMonitorCache" as Cache
+participant "绑定对象\n(existingRuntimeInfo)" as BoundInfo
+participant "Micrometer\nRegistry" as Micrometer
+
+== 第一次调用 ==
+Timer -> Monitor : 传入 runtimeInfo1
+Monitor -> Cache : 查询 threadPoolId
+Cache --> Monitor : 返回 null
+Monitor -> Cache : 缓存 runtimeInfo1
+Monitor -> Micrometer : 注册 Gauge\n绑定 runtimeInfo1
+
+== 第二次及以后 ==
+Timer -> Monitor : 传入 runtimeInfo2
+Monitor -> Cache : 查询 threadPoolId
+Cache --> Monitor : 返回 existingRuntimeInfo（即 runtimeInfo1）
+Monitor -> BoundInfo : copyProperties(runtimeInfo2 ➜ existingRuntimeInfo)
+
+note right of BoundInfo
+runtimeInfo1 字段值被更新
+Micrometer 实际采样的是它
+end note
+
+== Prometheus 采集指标 ==
+Micrometer -> BoundInfo : getRejectCount()
+BoundInfo --> Micrometer : 返回最新字段值（非 NaN）
+@enduml

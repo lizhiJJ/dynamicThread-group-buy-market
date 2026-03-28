@@ -1,0 +1,46 @@
+@startuml
+title 支持动态扩容的阻塞队列实现
+
+!option handwritten true
+skinparam class {
+  BackgroundColor #FAFAFA
+  ArrowColor #2E86C1
+  BorderColor #2E86C1
+  FontColor #1B4F72
+  FontSize 12
+}
+
+skinparam shadowing false
+
+package "java.util.concurrent" {
+  class LinkedBlockingQueue<E> {
+    - final int capacity
+    + LinkedBlockingQueue(int capacity)
+    .. 原生 put / take 等阻塞方法 ..
+  }
+}
+
+class ResizableCapacityLinkedBlockingQueue<E> {
+  + ResizableCapacityLinkedBlockingQueue(int capacity)
+  + boolean setCapacity(Integer newCapacity)
+  - Logger log
+}
+
+class ReflectUtil {
+  + setFieldValue(Object obj, String fieldName, Object value)
+}
+
+' 继承 & 调用依赖关系
+ResizableCapacityLinkedBlockingQueue --|> LinkedBlockingQueue
+ResizableCapacityLinkedBlockingQueue ..> ReflectUtil : 反射修改字段
+
+note right of ResizableCapacityLinkedBlockingQueue
+继承自 LinkedBlockingQueue 用于实现动态扩容能力
+通过反射将 final capacity 字段修改为新值
+end note
+
+note bottom of LinkedBlockingQueue
+JDK 原生阻塞队列容量字段为 final，不支持动态调整
+end note
+
+@enduml

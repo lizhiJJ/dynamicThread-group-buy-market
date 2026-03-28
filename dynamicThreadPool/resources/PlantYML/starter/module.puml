@@ -1,0 +1,39 @@
+@startuml
+title oneThread 模块依赖关系图（简洁分层）
+
+left to right direction
+
+!option handwritten true
+skinparam componentStyle rectangle
+skinparam ArrowColor Black
+skinparam BackgroundColor #FFFFFF
+skinparam ComponentBackgroundColor #E6F0FA
+skinparam ComponentBorderColor #4682B4
+skinparam PackageBorderColor #B0C4DE
+skinparam PackageBackgroundColor #F8FBFF
+skinparam DefaultFontSize 14
+skinparam shadowing false
+
+' —— 模块分层 ——
+package "Core 层\n（核心能力）" {
+  [core\n- 动态线程池能力\n- 监控与告警\n- 公共工具类] as Core
+}
+
+package "Spring 扩展层\n（适配能力）" {
+  [spring-base\n- Spring 封装\n- 注解识别注册] as SpringBase
+}
+
+package "Starter 封装层\n（开箱即用）" {
+  [starter/common-spring-boot-starter\n- 自动装配\n- 条件注解\n- 参数映射处理] as Starter
+}
+
+package "示例应用层\n（业务集成）" {
+  [nacos-cloud-example\n- Nacos 配置接入\n- 动态线程池演示] as Example
+}
+
+' —— 简洁依赖线 ——
+Core      --> SpringBase : 提供基础能力
+SpringBase --> Starter    : 支撑自动装配
+Starter    --> Example    : 被业务模块引入
+
+@enduml

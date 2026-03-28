@@ -1,0 +1,80 @@
+@startuml
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam roundCorner 6
+skinparam sequenceMessageAlign center
+
+' —— 参与者简约配色（低饱和） ——
+skinparam participant {
+  BackgroundColor<<Dev>> #EDF8FF
+  BorderColor<<Dev>> #C6E9FF
+  FontColor<<Dev>> #10304A
+
+  BackgroundColor<<Dashboard>> #FFF9F0
+  BorderColor<<Dashboard>> #F3E8D6
+  FontColor<<Dashboard>> #4A3A1A
+
+  BackgroundColor<<Nacos>> #F6FFF6
+  BorderColor<<Nacos>> #DFF7E6
+  FontColor<<Nacos>> #0F3E2F
+
+  BackgroundColor<<App>> #F7F9FF
+  BorderColor<<App>> #E6EEF9
+  FontColor<<App>> #18203D
+}
+
+participant "开发者" as Dev <<Dev>>
+participant "可视化服务" as Dashboard <<Dashboard>>
+participant "Nacos 配置中心" as Nacos <<Nacos>>
+participant "业务应用A" as AppA <<App>>
+participant "业务应用B" as AppB <<App>>
+
+' —— 生命线 & 激活条使用统一低调高亮 ——
+skinparam sequence {
+  ArrowColor #556575
+  LifeLineBorderColor #E6EDF3
+  LifeLineBackgroundColor #FFFFFF
+  ActivationBorderColor #9FC8FF
+  ActivationBackgroundColor #E8F4FF
+}
+
+Dev -> Dashboard: 可视化管理操作
+activate Dashboard
+Dashboard -> Nacos: 读取 / 更新 配置
+activate Nacos
+
+Nacos -> AppA: 推送配置变更
+activate AppA
+AppA -> AppA: 动态更新线程池
+deactivate AppA
+
+Nacos -> AppB: 推送配置变更
+activate AppB
+AppB -> AppB: 动态更新线程池
+deactivate AppB
+
+deactivate Nacos
+
+Dashboard -> AppA: 直接获取运行状态
+activate AppA
+AppA -> Dashboard: 返回监控数据
+deactivate AppA
+
+Dashboard -> AppB: 直接获取运行状态
+activate AppB
+AppB -> Dashboard: 返回监控数据
+deactivate AppB
+
+Dashboard -> Dev: 展示完整监控视图
+deactivate Dashboard
+
+note over Dashboard, Nacos
+  核心设计理念：
+  • 底层数据源依然是配置中心
+  • Dashboard 作为轻量可视化代理
+  • 业务应用仅依赖配置中心，无需感知 Dashboard
+  • 实现了轻量和功能性的平衡
+end note
+
+@enduml

@@ -1,0 +1,63 @@
+@startuml
+!option handwritten true
+
+' —— 通用简洁样式 ——
+skinparam class {
+    FontSize 13
+    RoundCorner 10
+    MethodFontColor #212121
+    AttributeFontColor #424242
+    ArrowColor #455A64
+}
+
+' —— 抽象类样式（浅灰） ——
+skinparam class {
+    BackgroundColor<<abstract>> #F5F5F5
+    BorderColor<<abstract>> #B0BEC5
+}
+
+' —— 子类样式（更淡灰） ——
+skinparam class {
+    BackgroundColor<<concrete>> #FAFAFA
+    BorderColor<<concrete>> #B0BEC5
+}
+
+' —— 抽象模板类 ——
+abstract class AbstractDynamicThreadPoolRefresher <<abstract>> {
+    - properties : BootstrapConfigProperties
+
+    + run(args: ApplicationArguments) : void <<模板方法>>
+    + refreshThreadPoolProperties(configInfo: String) : void
+
+    # registerListener() : void <<抽象方法>>
+    # beforeRegister() : void <<钩子方法>>
+    # afterRegister() : void <<钩子方法>>
+}
+
+' —— Nacos 实现类 ——
+class NacosCloudRefresherHandler <<concrete>> {
+    - configService : ConfigService
+
+    + NacosCloudRefresherHandler(configService, properties)
+    + registerListener() : void
+}
+
+' —— Apollo 实现类 ——
+class ApolloRefresherHandler <<concrete>> {
+    + ApolloRefresherHandler(properties)
+    + registerListener() : void
+    - createConfigChangeListener(...) : ConfigChangeListener
+}
+
+' —— 其他实现类占位 ——
+class XXXRefresherHandler <<concrete>> {
+    + XXXRefresherHandler(properties)
+    + registerListener() : void
+}
+
+' —— 继承关系 ——
+AbstractDynamicThreadPoolRefresher <|-- NacosCloudRefresherHandler
+AbstractDynamicThreadPoolRefresher <|-- ApolloRefresherHandler
+AbstractDynamicThreadPoolRefresher <|-- XXXRefresherHandler
+
+@enduml

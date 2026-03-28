@@ -1,0 +1,36 @@
+@startuml
+!option handwritten true
+
+' 背景和全局样式
+skinparam backgroundColor #F6F6F6
+skinparam shadowing true
+
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #A9A9A9  ' 柔和灰色边框
+}
+
+title 自定义 SpringBoot Starter 项目结构
+
+rectangle "my-hello-spring-boot-starter" as Starter {
+
+  ' Java 文件夹区域 - 灰蓝色调
+  rectangle "src/main/java/\ncom.example.starter" #DDEAF0 {
+
+    rectangle "HelloService.java" #BFD7EA
+    rectangle "<size:10><b>说明:</b>\nStarter 提供的业务功能类</size>" as HelloServiceNote #EFF3F6
+    HelloService.java -down-> HelloServiceNote
+
+    rectangle "HelloAutoConfig.java" #C8E6C9
+    rectangle "<size:10><b>说明:</b>\n自动配置类，包含\n@Configuration + @Conditional</size>" as AutoConfigNote #F1F5F0
+    HelloAutoConfig.java -down-> AutoConfigNote
+  }
+
+  ' 配置资源目录 - 雾橘色调
+  rectangle "src/main/resources" #FAF0DC {
+    rectangle "META-INF/spring/\nAutoConfiguration.imports" #FDE9C9
+    rectangle "<size:10><b>说明:</b>\nSpring Boot 3.x 自动装配入口</size>" as ImportsNote #F9F5ED
+    "META-INF/spring/\nAutoConfiguration.imports" -down-> ImportsNote
+  }
+}
+@enduml

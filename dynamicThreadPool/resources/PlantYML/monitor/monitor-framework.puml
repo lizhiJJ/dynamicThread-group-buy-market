@@ -1,0 +1,74 @@
+@startuml
+skinparam style strictuml
+skinparam shadowing true
+skinparam defaultTextAlignment center
+
+skinparam rectangle {
+  BackgroundColor #F2F9FF
+  BorderColor #88B6E0
+  FontColor #2C3E50
+  FontName "微软雅黑"
+  RoundCorner 15
+}
+skinparam package {
+  BackgroundColor #E6F2FF
+  BorderColor #88B6E0
+  FontColor #2C3E50
+  FontName "微软雅黑"
+  RoundCorner 20
+}
+skinparam arrow {
+  Color #5C9DED
+  Thickness 1.2
+}
+skinparam note {
+  BackgroundColor #FAFAFC
+  BorderColor #C9D9EA
+  FontColor #4A4A4A
+  FontName "微软雅黑"
+}
+
+package "oneThread Micrometer 架构" {
+
+    rectangle "ThreadPoolMonitor\n定时采集器" as Monitor
+    rectangle "ThreadPoolRuntimeInfo\n线程池运行快照" as Info
+    rectangle "MicrometerMonitorCache\n指标缓存中心" as Cache
+    rectangle "MicrometerExporter\n注册器（封装 Micrometer 接口）" as Exporter
+    rectangle "Micrometer 注册中心\n如 PrometheusRegistry" as Registry
+}
+
+rectangle "Prometheus\n拉取 /actuator/prometheus" as Prometheus
+
+' 数据链路
+Monitor --> Info : 构建快照对象
+Info --> Cache : 写入或更新引用
+Cache --> Exporter : 提供缓存指标对象
+Exporter --> Registry : 注册 Gauge 指标
+Registry --> Prometheus : 暴露指标供采集
+
+note right of Monitor
+定时采集线程池运行状态
+如 active.size、queue.size、reject.count 等
+end note
+
+note right of Cache
+缓存指标对象
+避免重复注册 Gauge
+确保引用稳定、内存安全
+end note
+
+note right of Exporter
+封装注册逻辑
+将运行数据绑定到 Micrometer 指标系统中
+end note
+
+note right of Registry
+Micrometer 核心组件
+支持 Prometheus、InfluxDB 等后端
+end note
+
+note right of Prometheus
+外部系统
+周期性拉取 /actuator/prometheus 获取时间序列指标
+end note
+@enduml

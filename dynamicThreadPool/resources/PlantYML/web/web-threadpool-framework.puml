@@ -1,0 +1,66 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 14
+
+' 接口定义
+interface WebThreadPoolService {
+  + updateThreadPool(config: WebThreadPoolConfig)
+  + getBasicMetrics(): WebThreadPoolBaseMetrics
+  + getRuntimeState(): WebThreadPoolState
+  + getRunningStatus(): String
+  + getWebContainerType(): WebContainerEnum
+}
+
+interface ApplicationRunner {
+  + run(args: ApplicationArguments): void
+}
+
+class AbstractWebThreadPoolService {
+  - executor: Executor
+  + getRunningStatus(): String
+  + getWebServer(): WebServer
+  + run(args: ApplicationArguments): void
+  # getExecutor(webServer: WebServer): Executor
+}
+
+abstract AbstractWebThreadPoolService
+AbstractWebThreadPoolService ..|> WebThreadPoolService
+AbstractWebThreadPoolService ..|> ApplicationRunner
+
+class JettyWebThreadPoolService {
+  + getExecutor(WebServer): Executor
+  + updateThreadPool(config: WebThreadPoolConfig)
+  + getBasicMetrics(): WebThreadPoolBaseMetrics
+  + getRuntimeState(): WebThreadPoolState
+  + getWebContainerType(): WebContainerEnum
+}
+
+class TomcatWebThreadPoolService {
+  + getExecutor(WebServer): Executor
+  + updateThreadPool(config: WebThreadPoolConfig)
+  + getBasicMetrics(): WebThreadPoolBaseMetrics
+  + getRuntimeState(): WebThreadPoolState
+  + getWebContainerType(): WebContainerEnum
+}
+
+JettyWebThreadPoolService --|> AbstractWebThreadPoolService
+TomcatWebThreadPoolService --|> AbstractWebThreadPoolService
+
+' 参数类和返回类
+class WebThreadPoolConfig
+class WebThreadPoolBaseMetrics
+class WebThreadPoolState
+enum WebContainerEnum
+
+' 方法参数/返回依赖
+WebThreadPoolService ..> WebThreadPoolConfig
+WebThreadPoolService ..> WebThreadPoolBaseMetrics
+WebThreadPoolService ..> WebThreadPoolState
+WebThreadPoolService ..> WebContainerEnum
+AbstractWebThreadPoolService ..> Executor
+AbstractWebThreadPoolService ..> WebServer
+AbstractWebThreadPoolService ..> ApplicationArguments
+AbstractWebThreadPoolService ..> ApplicationContext
+AbstractWebThreadPoolService ..> WebServerApplicationContext
+
+@enduml

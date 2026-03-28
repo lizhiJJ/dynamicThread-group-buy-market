@@ -1,0 +1,53 @@
+@startuml
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 14
+
+skinparam sequence {
+    ArrowColor Black
+    LifeLineBorderColor Black
+    NoteBackgroundColor #FFFFE0
+    NoteBorderColor Black
+}
+
+' 单独设置每个角色的背景色和边框
+skinparam participant {
+    BorderColor Black
+    FontColor Black
+}
+
+' 客户端（浅蓝）
+skinparam participantBackgroundColor<<Client>> #D6EAF8
+' Web容器（浅绿）
+skinparam participantBackgroundColor<<Container>> #D5F5E3
+' 线程池（淡橙）
+skinparam participantBackgroundColor<<ThreadPool>> #FAD7A0
+' 控制器（淡紫）
+skinparam participantBackgroundColor<<Controller>> #E8DAEF
+' 业务服务（淡灰）
+skinparam participantBackgroundColor<<Service>> #F2F3F4
+
+participant "<<Client>> 客户端" as Client
+participant "<<Container>> Web容器\n(Tomcat/Jetty)" as Container
+participant "<<ThreadPool>> 线程池" as ThreadPool
+participant "<<Controller>> SpringMVC\n控制器" as Controller
+participant "<<Service>> 业务服务" as Service
+
+Client -> Container: HTTP 请求
+Container -> ThreadPool: 获取工作线程
+ThreadPool --> Container: 分配线程
+Container -> Controller: 调用控制器方法
+Controller -> Service: 执行业务逻辑
+Service --> Controller: 返回结果
+Controller -> Container: 返回响应数据
+Container -> Client: HTTP 响应
+Container -> ThreadPool: 释放线程
+
+note right of ThreadPool
+线程池参数：
+- 核心线程数
+- 最大线程数
+- 队列容量
+- 空闲超时时间
+end note
+
+@enduml

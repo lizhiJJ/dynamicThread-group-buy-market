@@ -1,0 +1,40 @@
+@startuml
+title 动态线程池模板方法执行时序图
+!option handwritten true
+
+skinparam sequenceMessageAlign center
+skinparam ParticipantPadding 20
+skinparam BoxPadding 10
+skinparam LifeLineStrategy solid
+skinparam sequence {
+    ArrowThickness 1.2
+    LifeLineBorderColor #B0BEC5
+    LifeLineBackgroundColor #F8F9FA
+}
+
+' —— 参与者定义 ——
+actor SpringBootApp
+participant NacosCloudRefresherHandler
+participant ConfigService
+participant Listener
+participant AbstractDynamicThreadPoolRefresher
+participant ConfigParserHandler
+participant Binder
+
+== 启动注册阶段 ==
+
+SpringBootApp -> NacosCloudRefresherHandler : run()
+NacosCloudRefresherHandler -> AbstractDynamicThreadPoolRefresher : beforeRegister()
+NacosCloudRefresherHandler -> NacosCloudRefresherHandler : registerListener()
+NacosCloudRefresherHandler -> ConfigService : addListener(dataId, group, listener)
+NacosCloudRefresherHandler -> AbstractDynamicThreadPoolRefresher : afterRegister()
+
+== 配置变更触发阶段 ==
+
+ConfigService -> Listener : receiveConfigInfo(configInfo)
+Listener -> AbstractDynamicThreadPoolRefresher : refreshThreadPoolProperties(configInfo)
+
+AbstractDynamicThreadPoolRefresher -> ConfigParserHandler : parseConfig(configInfo)
+AbstractDynamicThreadPoolRefresher -> Binder : bind(configMap) to BootstrapConfigProperties
+AbstractDynamicThreadPoolRefresher -> AbstractDynamicThreadPoolRefresher : publishEvent(ThreadPoolConfigUpdateEvent)
+@enduml

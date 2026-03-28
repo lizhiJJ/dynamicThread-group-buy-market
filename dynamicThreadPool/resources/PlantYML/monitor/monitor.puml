@@ -1,0 +1,76 @@
+@startuml
+skinparam style strictuml
+skinparam shadowing true
+skinparam defaultTextAlignment center
+
+skinparam rectangle {
+  BackgroundColor #F0F7FF
+  BorderColor #6A9FB5
+  FontColor #1F2D3D
+  FontName "微软雅黑"
+  RoundCorner 15
+}
+
+skinparam package {
+  BackgroundColor #E6F0FA
+  BorderColor #6A9FB5
+  FontColor #1F2D3D
+  FontName "微软雅黑"
+  RoundCorner 20
+}
+
+skinparam arrow {
+  Color #4A90E2
+  Thickness 1.2
+}
+
+skinparam note {
+  BackgroundColor #FCFCFC
+  BorderColor #CCCCCC
+  FontColor #666666
+  FontName "微软雅黑"
+}
+
+actor "Grafana\n可视化" as Grafana
+
+package "应用端链路" {
+    rectangle "onethread-core\nmicrometer-core" as Core
+    rectangle "公共 Starter\nSpring Boot Actuator" as Starter
+    rectangle "应用代码\nprometheus-registry" as App
+}
+
+package "监控采集系统" {
+    rectangle "Prometheus\n采集服务器" as Prometheus
+}
+
+' 数据流向
+Core --> Starter : 注入指标对象\n自动装配
+Starter --> App : 暴露 /actuator/prometheus\nMicrometer endpoint
+App --> Prometheus : 拉取指标数据
+Prometheus --> Grafana : 查询时序数据\n绘图展示
+
+' 回溯箭头说明来源
+Starter <-- Core : 动态线程池指标数据
+App <-- Starter : 注册 Gauge 等 Micrometer 指标
+
+' 注释说明
+note right of Core
+定时采集线程池运行时数据：
+active.size、queue.size、reject.count 等
+end note
+
+note right of App
+使用 PrometheusRegistry
+将 Micrometer 数据转换为 Prometheus 格式
+end note
+
+note right of Prometheus
+默认每 15s 拉取一次
+应用指标端点数据
+end note
+
+note right of Grafana
+用户通过 PromQL 查询指标
+生成实时图表和告警视图
+end note
+@enduml

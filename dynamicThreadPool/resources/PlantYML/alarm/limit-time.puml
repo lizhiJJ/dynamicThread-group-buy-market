@@ -1,0 +1,33 @@
+@startuml
+skinparam backgroundColor #FEFEFE
+!option handwritten true
+skinparam sequenceArrowThickness 2
+skinparam sequenceMessageAlign center
+skinparam roundcorner 8
+skinparam sequenceParticipant underline
+
+participant "客户端" as Client
+participant "NotifierDispatcher" as Dispatcher
+participant "AlarmRateLimiter" as Limiter
+participant "DingTalkMessageService" as Service
+
+Client -> Dispatcher : sendAlarmMessage(alarm)
+activate Dispatcher
+Dispatcher -> Limiter : allowAlarm(threadPoolId, alarmType, interval)
+activate Limiter
+
+alt 首次告警或超过间隔时间
+    Limiter --> Dispatcher : true (允许发送)
+    deactivate Limiter
+    Dispatcher -> Service : sendAlarmMessage(alarm)
+    activate Service
+    Service --> Dispatcher : 发送完成
+    deactivate Service
+    Dispatcher --> Client : 告警已发送
+else 未超过间隔时间
+    Limiter --> Dispatcher : false (需要抑制)
+    deactivate Limiter
+    Dispatcher --> Client : 告警被限流
+end
+deactivate Dispatcher
+@enduml

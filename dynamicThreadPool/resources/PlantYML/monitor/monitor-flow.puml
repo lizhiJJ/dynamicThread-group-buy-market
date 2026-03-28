@@ -1,0 +1,68 @@
+@startuml 指标注册流程图
+' 使用柔和主题
+!theme plain
+skinparam backgroundColor #F9FBFD
+skinparam defaultFontName "Microsoft YaHei"
+skinparam shadowing true
+skinparam rectangle {
+    BackgroundColor #E6F0FA
+    BorderColor #A0AAB4
+    RoundCorner 15
+}
+skinparam partition {
+    BackgroundColor #E6F7E6
+    BorderColor #A5D6A7
+}
+skinparam activity {
+    BackgroundColor #FFFFFF
+    BorderColor #78909C
+    FontSize 14
+    FontColor #333333
+    StartColor #A5D6A7
+    EndColor #EF9A9A
+}
+skinparam arrow {
+    Color Black
+}
+
+start
+
+:接收 ThreadPoolRuntimeInfo;
+
+:获取 threadPoolId;
+
+:从缓存获取 existingRuntimeInfo;
+
+if (existingRuntimeInfo 是否为空?) then (是)
+  :创建 Tags;
+  :复制 runtimeInfo 到 registerRuntimeInfo;
+  :将 registerRuntimeInfo 放入缓存;
+
+  partition "注册总量指标" {
+    :注册 core.size Gauge;
+    :注册 maximum.size Gauge;
+    :注册 current.size Gauge;
+    :注册 largest.size Gauge;
+    :注册 active.size Gauge;
+    :注册 queue.size Gauge;
+    :注册 queue.capacity Gauge;
+    :注册 queue.remaining.capacity Gauge;
+  }
+
+  partition "注册增量指标" {
+    :创建 completedDelta DeltaWrapper;
+    :注册 completed.task.count Gauge;
+    :创建 rejectDelta DeltaWrapper;
+    :注册 reject.count Gauge;
+  }
+
+else (否)
+  :复制 runtimeInfo 属性到 existingRuntimeInfo;
+endif
+
+:更新 completedTaskDeltaMap 的 delta 值;
+:更新 rejectCountDeltaMap 的 delta 值;
+
+stop
+
+@enduml

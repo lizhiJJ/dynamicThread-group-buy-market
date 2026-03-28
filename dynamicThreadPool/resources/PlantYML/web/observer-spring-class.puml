@@ -1,0 +1,53 @@
+@startuml
+title Spring 事件机制下的观察者模式（配置刷新流程）
+
+
+skinparam ArrowColor #1F618D
+skinparam ArrowThickness 1.2
+skinparam defaultFontSize 13
+
+' === 核心事件类 ===
+class ApplicationEvent <<abstract>> {
+}
+
+class ThreadPoolConfigUpdateEvent {
+  - bootstrapConfigProperties: BootstrapConfigProperties
+}
+
+ThreadPoolConfigUpdateEvent --|> ApplicationEvent
+
+' === 配置变更来源组件 ===
+class ConfigChangeDetector {
+  +publishEvent(event: ThreadPoolConfigUpdateEvent)
+}
+
+class EventPublisher {
+  +publishEvent(event: ThreadPoolConfigUpdateEvent)
+}
+
+' === 监听接口及实现类 ===
+interface ApplicationListener {
+  +onApplicationEvent(event: ThreadPoolConfigUpdateEvent)
+}
+
+class DynamicThreadPoolRefreshListener {
+  +onApplicationEvent(event: ThreadPoolConfigUpdateEvent)
+}
+
+class WebThreadPoolRefreshListener {
+  +onApplicationEvent(event: ThreadPoolConfigUpdateEvent)
+}
+
+class CustomListener {
+  +onApplicationEvent(event: ThreadPoolConfigUpdateEvent)
+}
+
+' === 依赖关系 ===
+ConfigChangeDetector --> EventPublisher : 发布事件
+EventPublisher --> ApplicationListener : 通知监听器
+
+ApplicationListener <|-- DynamicThreadPoolRefreshListener
+ApplicationListener <|-- WebThreadPoolRefreshListener
+ApplicationListener <|-- CustomListener
+
+@enduml

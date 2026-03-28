@@ -1,0 +1,39 @@
+@startuml
+title Apollo 配置中心监听注册流程
+!option handwritten true
+
+actor System
+participant ApolloRefresherHandlerV1
+participant ConfigService
+participant Config
+participant ConfigChangeListener
+participant ConfigFile
+
+System -> ApolloRefresherHandlerV1: run(ApplicationArguments)
+ApolloRefresherHandlerV1 -> BootstrapConfigProperties: getApollo()
+BootstrapConfigProperties --> ApolloRefresherHandlerV1: ApolloConfig
+note right: 获取 Apollo 配置和命名空间
+ApolloRefresherHandlerV1 -> ApolloRefresherHandlerV1: split namespace
+note right: 分割命名空间字符串
+ApolloRefresherHandlerV1 -> ConfigService: getConfig(namespace + configFileType)
+ConfigService --> ApolloRefresherHandlerV1: Config
+note right: 获取指定命名空间的 Config 对象
+ApolloRefresherHandlerV1 -> ApolloRefresherHandlerV1: createConfigChangeListener(namespace, configFileType)
+ApolloRefresherHandlerV1 --> ConfigChangeListener: 创建监听器
+note right: 创建 ConfigChangeListener
+ApolloRefresherHandlerV1 -> Config: addChangeListener(ConfigChangeListener)
+note right: 注册监听器到 Config
+Config --> ApolloRefresherHandlerV1: 监听注册成功
+ApolloRefresherHandlerV1 -> Log: info("add apollo listener success")
+
+== 配置变更触发 ==
+Config -> ConfigChangeListener: onChange(configChangeEvent)
+ConfigChangeListener -> ApolloRefresherHandlerV1: replace namespace
+note right: 移除文件类型后缀
+ConfigChangeListener -> ConfigService: getConfigFile(namespaceItem, configFileFormat)
+ConfigService --> ConfigChangeListener: ConfigFile
+ConfigChangeListener -> ConfigFile: getContent()
+ConfigFile --> ConfigChangeListener: content
+note right: 获取变更后的最新配置内容
+
+@enduml

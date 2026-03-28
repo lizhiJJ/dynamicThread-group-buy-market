@@ -1,0 +1,49 @@
+@startuml
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Microsoft YaHei"
+skinparam defaultFontSize 14
+
+' 配色美化：角色用轻微背景色区分
+skinparam participant {
+    BorderColor Black
+    FontColor Black
+}
+
+skinparam participantBackgroundColor<<Network>> #E8F6F3
+skinparam participantBackgroundColor<<Connector>> #FEF9E7
+skinparam participantBackgroundColor<<ThreadPool>> #FADBD8
+skinparam participantBackgroundColor<<ServletContainer>> #EBF5FB
+skinparam participantBackgroundColor<<Dispatcher>> #F5EEF8
+skinparam participantBackgroundColor<<Controller>> #FDEDEC
+skinparam participantBackgroundColor<<Service>> #F4F6F7
+
+participant "网络层" as Network
+participant "连接器\n(Connector)" as Connector
+participant "线程池" as ThreadPool
+participant "Servlet容器" as ServletContainer
+participant "SpringMVC\n前端控制器" as DispatcherServlet
+participant "控制器" as Controller
+participant "业务服务" as Service
+
+Network -> Connector: TCP连接建立
+Connector -> Connector: HTTP协议解析
+Connector -> ThreadPool: 请求工作线程
+ThreadPool -> Connector: 分配线程
+Connector -> ServletContainer: 创建Request/Response
+ServletContainer -> DispatcherServlet: 调用service方法
+DispatcherServlet -> Controller: 路由到具体控制器
+Controller -> Service: 执行业务逻辑
+Service -> Controller: 返回业务结果
+Controller -> DispatcherServlet: 返回ModelAndView
+DispatcherServlet -> ServletContainer: 渲染响应
+ServletContainer -> Connector: 返回HTTP响应
+Connector -> Network: 发送响应数据
+Connector -> ThreadPool: 释放线程
+
+note right of ThreadPool
+线程池处理关键点：
+1. 线程池是请求处理的核心瓶颈
+2. 线程不足将导致请求排队
+3. 线程过多会增加切换开销
+end note
+@enduml

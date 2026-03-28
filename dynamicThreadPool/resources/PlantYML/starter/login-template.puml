@@ -1,0 +1,36 @@
+@startuml
+title 登录流程时序图 - 使用模板方法模式（UsernamePasswordLogin）
+!option handwritten true
+
+actor Client
+participant "UsernamePasswordLogin" as SubClass
+participant "LoginTemplate" as Template
+
+Client -> SubClass : login("admin")  <-- 实际调用的是父类模板方法
+activate SubClass
+
+SubClass -> Template : login("admin")
+activate Template
+
+Template -> Template : getLoginInput("admin")
+Template --> Template : "admin"
+
+Template -> SubClass : authenticate("admin")
+activate SubClass
+SubClass --> Template : true
+deactivate SubClass
+
+alt 登录成功
+    Template -> SubClass : postLogin("admin")
+    activate SubClass
+    SubClass --> Template :
+    deactivate SubClass
+else 登录失败
+    Template -> Template : 输出“登录失败”
+end
+
+Template --> SubClass :
+deactivate Template
+
+deactivate SubClass
+@enduml

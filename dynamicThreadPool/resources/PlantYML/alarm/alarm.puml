@@ -1,0 +1,41 @@
+@startuml
+!option handwritten true
+
+' 布局方向
+top to bottom direction
+
+' 美化样式配置
+skinparam backgroundColor #FFFFFF
+skinparam defaultTextAlignment center
+skinparam shadowing false
+
+skinparam rectangle {
+  BackgroundColor #E6F2FF
+  BorderColor     #4682B4
+  FontColor       #1B4F72
+  RoundCorner     10
+  FontSize        13
+  Padding         10
+}
+
+skinparam ArrowColor #1B4F72
+skinparam ArrowFontSize 12
+skinparam ArrowThickness 1.4
+
+' 元素定义
+actor "业务线程" as Client
+
+rectangle "ThreadPoolExecutor\n执行 execute(task)" as Executor
+rectangle "RejectedExecutionHandler Proxy\n(RejectedProxyInvocationHandler)" as Proxy
+rectangle "统计拒绝次数\nrejectCount.incrementAndGet()" as Stat
+rectangle "触发告警逻辑\n日志输出 / 通知推送" as Alarm
+rectangle "原始拒绝策略执行\n(如 AbortPolicy)" as Target
+
+' 调用流程
+Client --> Executor : 提交任务
+Executor --> Proxy : rejectedExecution(task, executor)
+Proxy --> Stat : 统计次数
+Proxy --> Alarm : 发送告警
+Proxy --> Target : 调用原始策略
+
+@enduml
